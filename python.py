@@ -470,23 +470,25 @@ async def run_bot():
     )
 
     application.add_handler(
-        MessageHandler(
-            filters.Document.ALL,
-            analyze_apk
-        )
+        MessageHandler(filters.Document.ALL, analyze_apk)
     )
 
     logger.info("Starting Firebase Extractor Bot...")
 
+    # Initialize bot
     await application.initialize()
     await application.start()
 
-    # Start polling properly
+    # Start web server manually
+    await start_web_server()
+
+    # Start telegram polling
     await application.updater.start_polling()
 
-    # Keep bot alive
-    while True:
-        await asyncio.sleep(3600)
+    logger.info("Bot is running...")
+
+    # Prevent exit
+    await asyncio.Event().wait()
 
 if __name__ == '__main__':
     try:
@@ -494,5 +496,4 @@ if __name__ == '__main__':
         asyncio.run(run_bot())
     except Exception as e:
         import traceback
-        print("CRASH ERROR:")
         print(traceback.format_exc())
