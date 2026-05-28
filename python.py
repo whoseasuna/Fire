@@ -468,4 +468,8 @@ def main() -> None:
     application.run_polling()
 
 if __name__ == '__main__':
-    main()
+    try:
+        print("Starting bot...")
+        main()
+    except Exception as e:
+        print("CRASH ERROR:", e)
