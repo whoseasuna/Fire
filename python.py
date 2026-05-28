@@ -449,7 +449,7 @@ async def analyze_apk(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 async def post_init(application: Application) -> None:
     await start_web_server()
 
-def main() -> None:
+async def run_bot():
     application = (
         Application.builder()
         .token(BOT_TOKEN)
@@ -461,15 +461,38 @@ def main() -> None:
     application.add_handler(CommandHandler("broadcast", broadcast))
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(CommandHandler("users", users_command))
-    application.add_handler(CallbackQueryHandler(verify_callback, pattern="^verify_membership$"))
-    application.add_handler(MessageHandler(filters.Document.ALL, analyze_apk))
+
+    application.add_handler(
+        CallbackQueryHandler(
+            verify_callback,
+            pattern="^verify_membership$"
+        )
+    )
+
+    application.add_handler(
+        MessageHandler(
+            filters.Document.ALL,
+            analyze_apk
+        )
+    )
 
     logger.info("Starting Firebase Extractor Bot...")
-    application.run_polling()
+
+    await application.initialize()
+    await application.start()
+
+    # Start polling properly
+    await application.updater.start_polling()
+
+    # Keep bot alive
+    while True:
+        await asyncio.sleep(3600)
 
 if __name__ == '__main__':
     try:
         print("Starting bot...")
-        main()
+        asyncio.run(run_bot())
     except Exception as e:
-        print("CRASH ERROR:", e)
+        import traceback
+        print("CRASH ERROR:")
+        print(traceback.format_exc())
