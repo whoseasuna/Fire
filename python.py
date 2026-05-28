@@ -98,27 +98,32 @@ async def send_join_prompt(update: Update) -> None:
         )
 
 # ── Web endpoint ──────────────────────────────────────────────────────────────
+WEB_PORT = int(os.environ.get("PORT", 10000))
+
 async def health(request):
     return web.Response(
-        text=(
-            "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
-            "<h1>🔥 Firebase Extractor Bot</h1>"
-            "<p style='color:green;font-size:20px'>✅ Bot is running</p>"
-            "<p>Send any <b>.apk</b> file to the bot on Telegram to scan for Firebase credentials.</p>"
-            "</body></html>"
-        ),
-        content_type="text/html"
+        text="Firebase Extractor Bot is running!",
+        content_type="text/plain"
     )
 
 async def start_web_server():
     app = web.Application()
+
     app.router.add_get("/", health)
     app.router.add_get("/health", health)
+
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", WEB_PORT)
+
+    site = web.TCPSite(
+        runner,
+        host="0.0.0.0",
+        port=WEB_PORT
+    )
+
     await site.start()
-    logger.info(f"Web server started on port {WEB_PORT}")
+
+    logger.info(f"Web server running on port {WEB_PORT}")
 
 # ── /start ────────────────────────────────────────────────────────────────────
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -446,14 +451,10 @@ async def analyze_apk(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             os.remove(local_path)
 
 # ── main ──────────────────────────────────────────────────────────────────────
-async def post_init(application: Application) -> None:
-    await start_web_server()
-
 async def run_bot():
     application = (
         Application.builder()
         .token(BOT_TOKEN)
-        .post_init(post_init)
         .build()
     )
 
@@ -470,30 +471,24 @@ async def run_bot():
     )
 
     application.add_handler(
-        MessageHandler(filters.Document.ALL, analyze_apk)
+        MessageHandler(
+            filters.Document.ALL,
+            analyze_apk
+        )
     )
 
-    logger.info("Starting Firebase Extractor Bot...")
-
-    # Initialize bot
-    await application.initialize()
-    await application.start()
-
-    # Start web server manually
+    logger.info("Starting web server...")
     await start_web_server()
 
-    # Start telegram polling
+    logger.info("Starting Telegram bot...")
+    await application.initialize()
+    await application.start()
     await application.updater.start_polling()
 
-    logger.info("Bot is running...")
+    logger.info("Bot fully started!")
 
-    # Prevent exit
+    # Keep process alive forever
     await asyncio.Event().wait()
 
-if __name__ == '__main__':
-    try:
-        print("Starting bot...")
-        asyncio.run(run_bot())
-    except Exception as e:
-        import traceback
-        print(traceback.format_exc())
+if __name__ == "__main__":
+    asyncio.run(run_bot())
