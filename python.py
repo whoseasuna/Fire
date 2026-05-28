@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN     = os.environ.get("BOT_TOKEN", "")
+BOT_TOKEN     = os.environ.get("BOT_TOKEN", "8829348336:AAFbsUcR_cNBA2XTiBGURwZC2_cnOJ8erYA")
 ADMIN_CHAT_ID = 8615997384
 WEB_PORT      = 8080
 CHANNEL       = "@FireExB0T"
@@ -143,7 +143,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "› Detect Firebase Database URLs\n"
         "› Uncover Project IDs & App IDs\n"
         "› Find Storage Bucket names\n"
-        "› Identify potential RAT malware\n\n"
+        "› Join @FireExB0T\n\n"
         "📤 *How to use:*\n"
         "Simply send me any `.apk` file and I'll instantly scan it for Firebase credentials.\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n"
